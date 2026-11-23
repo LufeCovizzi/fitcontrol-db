@@ -65,6 +65,7 @@ O FitControl é um sistema para gerenciar as operações de uma academia, reunin
 ### DER final (normalizado, 3FN)
 
 ```mermaid
+erDiagram
     ALUNO ||--o{ MATRICULA : "possui"
     PLANO ||--o{ MATRICULA : "define"
     FUNCIONARIO ||--o{ MATRICULA : "registra"
