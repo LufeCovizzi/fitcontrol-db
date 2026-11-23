@@ -14,6 +14,7 @@ O projeto cobre todo o caminho da concepção do sistema: levantamento do minimu
 - [Modelo de dados](#modelo-de-dados)
 - [Normalização](#normalização)
 - [Suposições de projeto](#suposições-de-projeto)
+- [Banco de dados (SQL)](#banco-de-dados-sql)
 - [Próximos passos](#próximos-passos)
 
 ## Visão geral
@@ -185,11 +186,72 @@ Os arquivos dos diagramas estão em [`docs/diagramas`](docs/diagramas):
 - Fotos, atestados e comprovantes ficam fora do banco; as tabelas guardam apenas o caminho do arquivo.
 - O CPF é único, mas não é chave primária: cada tabela usa um identificador numérico gerado automaticamente.
 
+## Banco de dados (SQL)
+
+Implementação do modelo em **PostgreSQL**, com scripts de criação, carga e manipulação dos dados.
+
+### Pré-requisitos
+
+- PostgreSQL 14 ou superior
+- pgAdmin 4 (ou o terminal `psql`)
+- Um banco de dados vazio chamado `fitcontrol_db`
+
+### Configuração do ambiente
+
+1. Instale o PostgreSQL e o pgAdmin 4.
+2. Conecte ao servidor local (`localhost`, porta `5432`, usuário `postgres`).
+3. Crie o banco de dados:
+
+```sql
+CREATE DATABASE fitcontrol_db;
+```
+
+4. Abra a **Query Tool** conectada ao `fitcontrol_db`.
+
+### Ordem de execução dos scripts
+
+Os scripts estão na pasta `sql/` e devem ser executados **nesta ordem**, pois as tabelas dependentes só podem ser criadas e populadas depois das tabelas que elas referenciam:
+
+| Ordem | Script | Tipo | O que faz |
+|---|---|---|---|
+| 1 | `01_create_tables.sql` | DDL | Cria as 9 tabelas com PK, FK, UNIQUE, NOT NULL e CHECK |
+| 2 | `02_insert.sql` | DML | Povoa as tabelas com dados de exemplo |
+| 3 | `03_select.sql` | DML | Executa 5 consultas gerenciais com JOIN, WHERE, ORDER BY e LIMIT |
+| 4 | `04_update.sql` | DML | Aplica 4 atualizações com filtros precisos |
+| 5 | `05_delete.sql` | DML | Executa exclusões respeitando as chaves estrangeiras |
+
+Pelo terminal, a execução completa fica assim:
+
+```bash
+psql -U postgres -d fitcontrol_db -f sql/01_create_tables.sql
+psql -U postgres -d fitcontrol_db -f sql/02_insert.sql
+psql -U postgres -d fitcontrol_db -f sql/03_select.sql
+psql -U postgres -d fitcontrol_db -f sql/04_update.sql
+psql -U postgres -d fitcontrol_db -f sql/05_delete.sql
+```
+
+### Consultas disponíveis
+
+1. **Alunos inadimplentes:** mensalidades atrasadas, valor devido e dias de atraso.
+2. **Horários de pico:** as 3 faixas de horário com mais check-ins.
+3. **Fichas de treino ativas:** exercícios, séries, carga e instrutor de cada aluno.
+4. **Risco de evasão:** os 3 alunos com menos check-ins nos últimos 30 dias.
+5. **Faturamento por plano:** total recebido em mensalidades pagas.
+
+### Observações para avaliação
+
+- As consultas usam a data fixa `2026-11-23` como referência, para que os resultados sejam sempre os mesmos. Em produção, ela seria substituída por `CURRENT_DATE`.
+- Os scripts de UPDATE e DELETE alteram os dados. Para repetir os testes do zero, exclua e recrie o banco e execute novamente os scripts 01 e 02.
+- O valor de cada mensalidade é armazenado no momento da cobrança, preservando o histórico mesmo após reajustes no preço do plano.
+- A exclusão de um aluno exige remover antes seus check-ins, mensalidades e matrículas, pois as chaves estrangeiras impedem registros órfãos.
+
 ## Próximos passos
 
-- [ ] Scripts SQL de criação das tabelas (DDL) com as restrições do modelo
-- [ ] Carga de dados de exemplo
-- [ ] Consultas gerenciais: inadimplência, horários de pico, faturamento por plano e risco de evasão
+- [x] Scripts SQL de criação das tabelas (DDL) com as restrições do modelo
+- [x] Carga de dados de exemplo
+- [x] Consultas gerenciais: inadimplência, horários de pico, faturamento por plano e risco de evasão
+- [ ] Views para os relatórios mais usados
+- [ ] API REST em Python (FastAPI) consumindo o banco
 
 ## Autor
 
