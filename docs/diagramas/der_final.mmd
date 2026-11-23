@@ -1,0 +1,84 @@
+---
+title: FitControl - DER final normalizado (3FN)
+---
+erDiagram
+    ALUNO ||--o{ MATRICULA : "possui"
+    PLANO ||--o{ MATRICULA : "define"
+    FUNCIONARIO ||--o{ MATRICULA : "registra"
+    MATRICULA ||--|{ MENSALIDADE : "gera"
+    ALUNO ||--o{ CHECKIN : "realiza"
+    ALUNO ||--o{ FICHA_TREINO : "recebe"
+    FUNCIONARIO ||--o{ FICHA_TREINO : "elabora"
+    FICHA_TREINO ||--|{ ITEM_FICHA : "contem"
+    EXERCICIO ||--o{ ITEM_FICHA : "compoe"
+
+    ALUNO {
+        int id_aluno PK
+        varchar cpf UK
+        varchar nome
+        date data_nascimento
+        varchar telefone
+        varchar email
+        varchar foto_url
+        varchar atestado_url
+    }
+    FUNCIONARIO {
+        int id_funcionario PK
+        varchar cpf UK
+        varchar nome
+        varchar cargo "recepcionista, instrutor, gestor"
+        varchar telefone
+        varchar email
+    }
+    PLANO {
+        int id_plano PK
+        varchar nome
+        int duracao_meses
+        decimal valor
+    }
+    MATRICULA {
+        int id_matricula PK
+        int id_aluno FK
+        int id_plano FK
+        int id_funcionario FK "quem registrou"
+        date data_inicio
+        date data_vencimento
+        varchar situacao "ativa, suspensa, cancelada"
+    }
+    MENSALIDADE {
+        int id_mensalidade PK
+        int id_matricula FK
+        date data_vencimento
+        decimal valor
+        date data_pagamento
+        varchar forma_pagamento
+        varchar status "pendente, paga, atrasada"
+        varchar comprovante_url
+    }
+    CHECKIN {
+        int id_checkin PK
+        int id_aluno FK
+        datetime data_hora
+    }
+    FICHA_TREINO {
+        int id_ficha PK
+        int id_aluno FK
+        int id_instrutor FK
+        date data_criacao
+        varchar objetivo
+        boolean ativa
+    }
+    EXERCICIO {
+        int id_exercicio PK
+        varchar nome UK
+        varchar grupo_muscular
+    }
+    ITEM_FICHA {
+        int id_item PK
+        int id_ficha FK
+        int id_exercicio FK
+        int series
+        int repeticoes
+        decimal carga_kg
+        text observacao
+    }
